@@ -1,0 +1,58 @@
+# macOS System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.pyc
+*.pyo
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDEs
+.idea/          # PyCharm
+.vscode/        # VS Code
+*.swp           # Vim
+*.swo           # Vim
+*.sublime-*     # Sublime Text
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+*.log
+
+# Environment Variables
+.env
+.env.local
+
+# OS Generated
+Thumbs.db
+Desktop.ini
+
+# Project data, models and outputs (too large / regenerated, kept out of version control)
+data/
+analysis_output/
+saved_model/
