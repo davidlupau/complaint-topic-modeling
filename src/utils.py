@@ -6,7 +6,7 @@ from pathlib import Path
 # ─────────────────────────────────────────────────────────────────────────────
 
 def load_dataset(file_name: str) -> pd.DataFrame | None:
-    """Load an Amazon Fashion reviews CSV from the project data directory.
+    """Load Customer Complaints Sentiment and Priority CSV from the project data directory.
 
     Parameters:
         file_name (str): Name of the CSV file inside the project's data/ folder.

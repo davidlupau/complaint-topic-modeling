@@ -54,5 +54,4 @@ Desktop.ini
 
 # Project data, models and outputs (too large / regenerated, kept out of version control)
 data/
-analysis_output/
 saved_model/
