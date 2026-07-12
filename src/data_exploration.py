@@ -165,28 +165,36 @@ def check_text_length(df: pd.DataFrame) -> pd.DataFrame:
     save_path = _output_path("text_length_distribution.png")
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
     print(f"\nSaved plot to: {save_path}")
+    plt.show()
 
     return lengths
 
 
-def check_frequent_tokens(df: pd.DataFrame, top_n: int = 30) -> pd.Series:
-    """Return the most frequent raw tokens in the narratives (no cleaning applied).
+def check_frequent_tokens(df: pd.DataFrame, column: str = TEXT_COL, top_n: int = 30,
+                          filename: str = "top_raw_tokens.png") -> pd.Series:
+    """Return the most frequent whitespace-split tokens in a text column.
 
     Tokenization here is deliberately naive so that raw noise is exposed, such as
-    the XXXX redaction placeholders and punctuation. This reveals which stopwords,
-    redaction tokens and symbols will need removing during preprocessing.
+    the XXXX redaction placeholders and punctuation. Run on the raw narrative
+    column, this reveals which stopwords, redaction tokens and symbols will need
+    removing during preprocessing; run on a cleaned column, it instead serves as
+    a post-cleaning sanity check.
 
     Parameters:
         df (pd.DataFrame): The complaints DataFrame to inspect.
+        column (str): Name of the text column to tokenize. Defaults to
+            TEXT_COL ("Consumer_complaint").
         top_n (int): Number of most frequent tokens to report. Defaults to 30.
+        filename (str): Name of the PNG file to save inside analysis_output/.
+            Defaults to "top_raw_tokens.png".
 
     Returns:
-        pd.Series: The top_n raw tokens indexed by token, with their counts,
+        pd.Series: The top_n tokens indexed by token, with their counts,
             ordered from most to least frequent.
     """
-    print(f"\n=== Top {top_n} raw tokens ===\n")
+    print(f"\n=== Top {top_n} tokens in '{column}' ===\n")
 
-    text = df[TEXT_COL].fillna("").astype(str).str.cat(sep=" ")
+    text = df[column].fillna("").astype(str).str.cat(sep=" ")
     # Split on whitespace but keep punctuation attached to words so that noise
     # (e.g. "account." or standalone symbols) stays visible.
     tokens = re.split(r"\s+", text.strip())
@@ -199,14 +207,15 @@ def check_frequent_tokens(df: pd.DataFrame, top_n: int = 30) -> pd.Series:
     fig, ax = plt.subplots(figsize=(10, 8))
     ordered = top_tokens.iloc[::-1]  # smallest at top for horizontal bar chart
     ax.barh(ordered.index, ordered.values, color="#FF6B6B", edgecolor="white")
-    ax.set_title(f"Top {top_n} most frequent raw tokens")
+    ax.set_title(f"Top {top_n} most frequent tokens in '{column}'")
     ax.set_xlabel("Frequency")
-    ax.set_ylabel("Raw token")
+    ax.set_ylabel("Token")
     fig.tight_layout()
 
-    save_path = _output_path("top_raw_tokens.png")
+    save_path = _output_path(filename)
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
     print(f"\nSaved plot to: {save_path}")
+    plt.show()
 
     return top_tokens
 

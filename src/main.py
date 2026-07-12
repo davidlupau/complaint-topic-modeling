@@ -7,6 +7,7 @@ from data_exploration import (
     check_frequent_tokens,
     show_sample_complaints,
 )
+from preprocessing import preprocess_corpus, save_processed_data
 
 def main ():
     # Loading dataset
@@ -21,6 +22,10 @@ def main ():
     check_text_length(df)
     check_frequent_tokens(df)
     show_sample_complaints(df)
+
+    # Preprocessing pass
+    processed_df = preprocess_corpus(df)
+    save_processed_data(processed_df, "complaints_clean.csv")
 
 
 if __name__ == "__main__":
