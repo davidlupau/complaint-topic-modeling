@@ -8,6 +8,7 @@ from data_exploration import (
     show_sample_complaints,
 )
 from preprocessing import preprocess_corpus, save_processed_data
+from vectorization import run_vectorization
 
 def main ():
     # Loading dataset
@@ -26,6 +27,9 @@ def main ():
     # Preprocessing pass
     processed_df = preprocess_corpus(df)
     save_processed_data(processed_df, "complaints_clean.csv")
+
+    # Vectorization pass
+    vectorization_results = run_vectorization(processed_df)
 
 
 if __name__ == "__main__":

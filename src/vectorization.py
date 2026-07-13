@@ -15,7 +15,68 @@ PROJECT_ROOT = Path(__file__).parent.parent
 VECTOR_DIR = PROJECT_ROOT / "data" / "vectorized"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECTION 2 — VECTORIZATION REPORTING
+# SECTION 2 — VECTORIZATION STEPS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def build_tfidf_vectorizer(series: pd.Series) -> tuple[TfidfVectorizer, spmatrix]:
+    """Fit a TfidfVectorizer on cleaned complaint text for the LSA pipeline.
+
+    Uses TF-IDF weights (use_idf/smooth_idf) since LSA's singular value
+    decomposition operates on term importance rather than raw counts.
+    min_df/max_df/ngram_range/max_features shape the vocabulary identically
+    to build_count_vectorizer, so both pipelines model the same terms.
+
+    Parameters:
+        series (pd.Series): Cleaned complaint text to vectorize, one document
+            per row.
+
+    Returns:
+        tuple[TfidfVectorizer, scipy.sparse.spmatrix]: The fitted vectorizer
+            and the resulting document-term matrix.
+    """
+    vectorizer = TfidfVectorizer(
+        min_df=5,
+        max_df=0.5,
+        ngram_range=(1, 1),
+        max_features=None,
+        use_idf=True,
+        smooth_idf=True,
+        sublinear_tf=False,
+    )
+    matrix = vectorizer.fit_transform(series)
+    print(f"Fitted TfidfVectorizer on {len(series)} documents")
+    return vectorizer, matrix
+
+
+def build_count_vectorizer(series: pd.Series) -> tuple[CountVectorizer, spmatrix]:
+    """Fit a CountVectorizer on cleaned complaint text for the LDA pipeline.
+
+    Uses raw term counts with no IDF weighting, since LDA models documents as
+    a mixture of topics generated from a Dirichlet-multinomial process over
+    word counts. Shares identical min_df/max_df/ngram_range/max_features with
+    build_tfidf_vectorizer so both pipelines model the same vocabulary.
+
+    Parameters:
+        series (pd.Series): Cleaned complaint text to vectorize, one document
+            per row.
+
+    Returns:
+        tuple[CountVectorizer, scipy.sparse.spmatrix]: The fitted vectorizer
+            and the resulting document-term matrix.
+    """
+    vectorizer = CountVectorizer(
+        min_df=5,
+        max_df=0.5,
+        ngram_range=(1, 1),
+        max_features=None,
+    )
+    matrix = vectorizer.fit_transform(series)
+    print(f"Fitted CountVectorizer on {len(series)} documents")
+    return vectorizer, matrix
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECTION 3 — VECTORIZATION REPORTING
 # ─────────────────────────────────────────────────────────────────────────────
 
 def summarize_vectorizer(vectorizer: TfidfVectorizer | CountVectorizer,
@@ -71,7 +132,7 @@ def top_terms_by_document_frequency(vectorizer: TfidfVectorizer | CountVectorize
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SECTION 3 — SAVING ARTIFACTS
+# SECTION 4 — SAVING ARTIFACTS
 # ─────────────────────────────────────────────────────────────────────────────
 
 def save_vectorization_artifacts(vectorizer: TfidfVectorizer | CountVectorizer,
@@ -102,3 +163,47 @@ def save_vectorization_artifacts(vectorizer: TfidfVectorizer | CountVectorizer,
 
     print(f"Saved vectorizer to: {vectorizer_path}")
     print(f"Saved matrix to: {matrix_path}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECTION 5 — ORCHESTRATION
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_vectorization(df: pd.DataFrame, text_column: str = "cleaned_complaint") -> dict:
+    """Run both vectorization pipelines over the cleaned corpus and save artifacts.
+
+    Fits Pipeline A (TF-IDF, for LSA) and Pipeline B (CountVectorizer, for
+    LDA) on the same text column, reports vocabulary size, matrix shape,
+    sparsity and the top terms by document frequency for each, and persists
+    both fitted vectorizers and matrices to data/vectorized/.
+
+    Parameters:
+        df (pd.DataFrame): The processed complaints DataFrame.
+        text_column (str): Name of the cleaned text column to vectorize.
+            Defaults to "cleaned_complaint".
+
+    Returns:
+        dict: "tfidf_vectorizer", "tfidf_matrix", "count_vectorizer" and
+            "count_matrix" holding the fitted vectorizers and matrices for
+            reuse without reloading from disk.
+    """
+    print("\nRunning vectorization pipelines...\n")
+
+    print("--- Pipeline A: TF-IDF ---")
+    tfidf_vectorizer, tfidf_matrix = build_tfidf_vectorizer(df[text_column])
+    summarize_vectorizer(tfidf_vectorizer, tfidf_matrix)
+    print(top_terms_by_document_frequency(tfidf_vectorizer, tfidf_matrix))
+    save_vectorization_artifacts(tfidf_vectorizer, tfidf_matrix, "tfidf")
+
+    print("\n--- Pipeline B: CountVectorizer ---")
+    count_vectorizer, count_matrix = build_count_vectorizer(df[text_column])
+    summarize_vectorizer(count_vectorizer, count_matrix)
+    print(top_terms_by_document_frequency(count_vectorizer, count_matrix))
+    save_vectorization_artifacts(count_vectorizer, count_matrix, "count")
+
+    return {
+        "tfidf_vectorizer": tfidf_vectorizer,
+        "tfidf_matrix": tfidf_matrix,
+        "count_vectorizer": count_vectorizer,
+        "count_matrix": count_matrix,
+    }
