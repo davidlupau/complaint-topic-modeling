@@ -1,3 +1,5 @@
+"""TF-IDF and CountVectorizer pipelines for the LSA/LDA topic models, with reporting and persistence."""
+
 from pathlib import Path
 
 import joblib

@@ -1,3 +1,5 @@
+"""End-to-end pipeline: load, explore, preprocess, vectorize and topic-model the complaints corpus."""
+
 from utils import load_dataset
 from data_exploration import (
     check_shape_and_missing,
@@ -9,6 +11,7 @@ from data_exploration import (
 )
 from preprocessing import preprocess_corpus, save_processed_data
 from vectorization import run_vectorization
+from topic_modeling import run_topic_modeling
 
 def main ():
     # Loading dataset
@@ -30,6 +33,9 @@ def main ():
 
     # Vectorization pass
     vectorization_results = run_vectorization(processed_df)
+
+    # Topic modeling pass
+    topic_modeling_results = run_topic_modeling(processed_df, vectorization_results)
 
 
 if __name__ == "__main__":

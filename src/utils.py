@@ -1,3 +1,5 @@
+"""Shared helper for loading the raw complaints dataset from data/."""
+
 import pandas as pd
 from pathlib import Path
 

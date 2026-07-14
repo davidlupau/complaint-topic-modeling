@@ -1,3 +1,5 @@
+"""Exploratory data analysis checks on the raw complaints corpus."""
+
 import re
 from collections import Counter
 from pathlib import Path

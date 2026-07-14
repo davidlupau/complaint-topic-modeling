@@ -1,3 +1,5 @@
+"""Text cleaning, tokenization and lemmatization pipeline for the complaints corpus."""
+
 import re
 import string
 from pathlib import Path
